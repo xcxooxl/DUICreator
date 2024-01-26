@@ -85,7 +85,7 @@ namespace DuiHandler
         private void RemoveDuiContainer(DuiContainer duiContainer)
         {
             SetDuiUrl(duiContainer.duiObj, "about:blank");
-            //API.DestroyDui(duiContainer.duiObj);
+            //DestroyDui(duiContainer.duiObj);
 
             foreach (var prop in duiContainer.Props)
             {
@@ -114,8 +114,8 @@ namespace DuiHandler
 
         public async Task<DuiContainer> AddDui(String renderTarget, string url)
         {
-            //API.RemoveIpl("ex_dt1_11_office_01a");
-            //API.RequestIpl("ex_dt1_11_office_01a");
+            //RemoveIpl("ex_dt1_11_office_01a");
+            //RequestIpl("ex_dt1_11_office_01a");
             DuiContainer duiContainer = null;
             if (DeletedContainers.ContainsKey(renderTarget) && DeletedContainers[renderTarget].Any())
             {
@@ -133,7 +133,7 @@ namespace DuiHandler
             DuiContainers[renderTarget].Add(duiContainer);
             if (!UsedRenderTargets.Contains(renderTarget))
             {
-                //Function.Call((Hash)0xE9F6FFE837354DD4, duiContainer.RenderTargetName);
+                //ReleaseNamedRendertarget(duiContainer.RenderTargetName);
                 UsedRenderTargets.Add(renderTarget);
             }
             return duiContainer;
