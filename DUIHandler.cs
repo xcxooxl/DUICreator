@@ -22,15 +22,14 @@ namespace DuiHandler
 
         public void Draw()
         {
-            API.SetTextRenderId(TargetHandle);
-            API.Set_2dLayer(4);
-            Function.Call((Hash)0xC6372ECD45D73BCD, 1);
-            API.DrawRect(0.5f, 0.5f, 1.0f, 1.0f, 0, 0, 0, 255);
-            API.DrawSprite($"{this.RenderTargetName}-{UniqId}",
-                $"{this.RenderTargetName}-{UniqId}-test", 0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 255, 255, 255, 255);
+            SetTextRenderId(TargetHandle);
+            SetScriptGfxDrawOrder(4);
+            SetScriptGfxDrawBehindPausemenu(true);
+            DrawRect(0.5f, 0.5f, 1.0f, 1.0f, 0, 0, 0, 255);
+            DrawSprite($"{this.RenderTargetName}-{UniqId}", $"{this.RenderTargetName}-{UniqId}-test", 0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 255, 255, 255, 255);
             //DrawSprite('fib_pc', 'arrow', mX / screenWidth, mY / screenHeight, 0.02, 0.02, 0.0, 255, 255, 255, 255)
-            API.SetTextRenderId(API.GetDefaultScriptRendertargetRenderId());
-            Function.Call((Hash)0xC6372ECD45D73BCD, 0);
+            SetTextRenderId(GetDefaultScriptRendertargetRenderId());
+            SetScriptGfxDrawBehindPausemenu(false);
         }
 
     }
@@ -46,7 +45,7 @@ namespace DuiHandler
             Exports.Add("createDui", new Func<string, string, Task<DuiContainer>>(AddDui));
             Exports.Add("CreateRandomUniqueDuiContainer", new Func<string, Task<DuiContainer>>(CreateRandomUniqueDuiContainer));
             Exports.Add("destroyAllDui", new Func<Task>(DestroyAllDui));
-            var renderTargetsJson = API.LoadResourceFile("addon", "renderTargets.json");
+            var renderTargetsJson = LoadResourceFile("addon", "renderTargets.json");
             RenderTargets = JsonConvert.DeserializeObject<Dictionary<String, List<String>>>(renderTargetsJson);
 
             this.Tick += DuiHandler_Tick;
@@ -85,8 +84,8 @@ namespace DuiHandler
 
         private void RemoveDuiContainer(DuiContainer duiContainer)
         {
-            API.SetDuiUrl(duiContainer.duiObj, "about:blank");
-            //API.DestroyDui(duiContainer.duiObj);
+            SetDuiUrl(duiContainer.duiObj, "about:blank");
+            //DestroyDui(duiContainer.duiObj);
 
             foreach (var prop in duiContainer.Props)
             {
@@ -115,8 +114,8 @@ namespace DuiHandler
 
         public async Task<DuiContainer> AddDui(String renderTarget, string url)
         {
-            //API.RemoveIpl("ex_dt1_11_office_01a");
-            //API.RequestIpl("ex_dt1_11_office_01a");
+            //RemoveIpl("ex_dt1_11_office_01a");
+            //RequestIpl("ex_dt1_11_office_01a");
             DuiContainer duiContainer = null;
             if (DeletedContainers.ContainsKey(renderTarget) && DeletedContainers[renderTarget].Any())
             {
@@ -134,7 +133,7 @@ namespace DuiHandler
             DuiContainers[renderTarget].Add(duiContainer);
             if (!UsedRenderTargets.Contains(renderTarget))
             {
-                //Function.Call((Hash)0xE9F6FFE837354DD4, duiContainer.RenderTargetName);
+                //ReleaseNamedRendertarget(duiContainer.RenderTargetName);
                 UsedRenderTargets.Add(renderTarget);
             }
             return duiContainer;
@@ -148,7 +147,7 @@ namespace DuiHandler
             {
                 DeletedContainers.Remove(renderTarget);
             }
-            API.SetDuiUrl(duiContainer.duiObj, url);
+            SetDuiUrl(duiContainer.duiObj, url);
             return duiContainer;
         }
 
@@ -183,18 +182,18 @@ namespace DuiHandler
 
         private Tuple<long, int, long, string> SetupScreen(String url, String renderTargetName, String modelName)
         {
-            var model = API.GetHashKey(modelName);
+            var model = GetHashKey(modelName);
             var uniqID = Guid.NewGuid();
 
             var scale = 1.5;
             var screenWidth = Math.Floor(Screen.Width / scale);
             var screenHeight = Math.Floor(Screen.Height / scale);
             var handle = CreateNamedRenderTargetForModel(renderTargetName, (uint)model);
-            var txd = API.CreateRuntimeTxd($"{renderTargetName}-{uniqID}");
-            var duiObj = API.CreateDui(url, (int)screenWidth, (int)screenHeight);
+            var txd = CreateRuntimeTxd($"{renderTargetName}-{uniqID}");
+            var duiObj = CreateDui(url, (int)screenWidth, (int)screenHeight);
 
-            var dui = API.GetDuiHandle(duiObj);
-            var tx = Function.Call<long>((Hash)((uint)Hash.CREATE_RUNTIME_TEXTURE_FROM_DUI_HANDLE & 0xFFFFFFFF), txd, $"{renderTargetName}-{uniqID}-test", dui);
+            var dui = GetDuiHandle(duiObj);
+            var tx = CreateRuntimeTextureFromDuiHandle(txd, $"{renderTargetName}-{uniqID}-test", dui);
 
             return new Tuple<long, int, long, string>(tx, handle, duiObj, uniqID.ToString());
         }
